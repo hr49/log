@@ -1,8 +1,16 @@
 #!/bin/bash
+set -eo pipefail
 unalias -a
-directory="$HOME/log/$1"
-test -d "$directory" && { index="$(\ls "$directory" | grep '^[1-9] [1-9][0-9]\{0,8\} \S.*' | sed 's/^[1-9] \([1-9][0-9]\{0,8\}\) \S.*/\1/g' | sort -n | tail -n1; exit "${PIPESTATUS[0]}")" || exit 1; }
-let index+=1
-directory="$directory/${#index} $index ${*:2}"
-{ "$@" | tee /dev/tty | install -D /dev/stdin "$directory/1" || exit 1; } 2>&1 | tee /dev/tty | install -D /dev/stdin "$directory/2" || exit 1
-exit "${PIPESTATUS[0]}"
+d="$HOME/log/$1"
+if test -d "$d"; then
+        index=$(ls "$d" | sed 's/^[1-9] \([1-9][0-9]\{0,8\}\)\( \S\+\)\+$/\1/' | sort -n | tail -n1)
+fi
+((++index))
+d="$d/${#index} $index ${*:2}"
+tmp_d=$(mktemp -d)
+fifo=$tmp_d/3
+mkfifo $fifo
+trap "rm -rf $tmp_d" 0
+exec 3<> $fifo
+trap "exec 3>&-" 0
+"$@" 2>&3 | tee /dev/tty | install -D /dev/stdin "$d/1" | 3>&1 tee /dev/tty | install -D /dev/stdin "$d/2"
