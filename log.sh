@@ -12,8 +12,4 @@ trap "rm -fr $error_fifo_directory" EXIT
 error_fifo=$error_fifo_directory/error
 mkfifo $error_fifo
 exec 3<> $error_fifo
-
-install -d "$log_directory"
-chmod 000 "$log_directory"
-
 "$@" 2>&3 | tee /dev/tty | install -D /dev/stdin "$log_directory/1" | 3>&1 tee /dev/tty | install -D /dev/stdin "$log_directory/2"
