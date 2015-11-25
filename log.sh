@@ -3,7 +3,7 @@ set -eo pipefail
 unalias -a
 log_directory_directory="$HOME/log/$1"
 if [[ -d $log_directory_directory ]]; then
-        log_index=$(ls "$log_directory_directory" | sed 's/^\([1-9][0-9]\+\)\( \S\+\)\+$/\1/' | sort -n | tail -n1)
+        log_index=$(ls "$log_directory_directory" | sed 's/^\([1-9][0-9]*\)\( \S\+\)\+$/\1/' | sort -n | tail -n1)
 fi
 ((++log_index))
 log_directory="$log_directory_directory/$log_index ${@:2}"
