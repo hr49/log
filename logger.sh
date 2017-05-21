@@ -35,14 +35,16 @@ install -d "$TERMINAL_LOGGER_DIRECTORY"
         else exec 3>"$TERMINAL_LOG"
         fi
 } 4>"$TERMINAL_LOGGER_DIRECTORY/lock"
+DATE_FORMAT='+%Y%m%dT%H%M%S%z'
 
 function format {
         while IFS= read -r x
         do stdbuf -o0 -e0 printf "%s %s%s%s\n" "$(
-                stdbuf -o0 -e0 date '+%Y%m%dT%H%M%S%z')" "$1" "$x" "$2"
+                stdbuf -o0 -e0 date "$DATE_FORMAT")" "$1" "$x" "$2"
         done
 }
 
+date "$DATE_FORMAT" >&3
 echo "$@" >&3
 { { { { { {
         "$@" 4>&-|tee /dev/stderr 2>&4 4>&-
