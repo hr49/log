@@ -24,7 +24,7 @@ install -d "$TERMINAL_LOGGER_DIRECTORY"
         TERMINAL_LOGS="$TERMINAL_LOGGER_DIRECTORY/terminal*.log"
         TERMINAL_LOG_PATTERN='terminal\.([1-9][0-9]*)\.log'
         if [[ -e "$TERMINAL_LOG" ]]
-        then exec 3>"${TERMINAL_LOG_HEAD}$(($({
+        then exec 3> "${TERMINAL_LOG_HEAD}$(($({
                 for terminal_log in $TERMINAL_LOGS
                 do
                         if [[ $terminal_log =~ $TERMINAL_LOG_PATTERN ]]
@@ -32,9 +32,9 @@ install -d "$TERMINAL_LOGGER_DIRECTORY"
                         fi
                 done
         }|sort -n|tail -n1) + 1)).log"
-        else exec 3>"$TERMINAL_LOG"
+        else exec 3> "$TERMINAL_LOG"
         fi
-} 4>"$TERMINAL_LOGGER_DIRECTORY/lock"
+} 4> "$TERMINAL_LOGGER_DIRECTORY/lock"
 DATE_FORMAT='+%Y%m%dT%H%M%S%z'
 
 function format {
