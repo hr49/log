@@ -20,19 +20,19 @@ _terminal_logger_directory="$HOME/.terminal-logger"
 install -d "$_terminal_logger_directory"
 {
         _terminal_log_head="$_terminal_logger_directory/terminal."
-        _terminal_log="${_terminal_log_head}log"
+        _the_terminal_log="${_terminal_log_head}log"
         _terminal_logs="$_terminal_logger_directory/terminal*.log"
         _terminal_log_pattern='terminal\.([1-9][0-9]*)\.log'
-        if [[ -e "$_terminal_log" ]]
+        if [[ -e "$_the_terminal_log" ]]
         then exec 3> "${_terminal_log_head}$(($({
-                for terminal_log in $_terminal_logs
+                for _terminal_log in $_terminal_logs
                 do
-                        if [[ $terminal_log =~ $_terminal_log_pattern ]]
+                        if [[ $_terminal_log =~ $_terminal_log_pattern ]]
                         then echo "${BASH_REMATCH[1]}"
                         fi
                 done
         }|sort -n|tail -n1) + 1)).log"
-        else exec 3> "$_terminal_log"
+        else exec 3> "$_the_terminal_log"
         fi
 } 4> "$_terminal_logger_directory/lock"
 _date_format='+%Y%m%dT%H%M%S%z'
