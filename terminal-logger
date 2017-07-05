@@ -16,35 +16,35 @@
 set -eo pipefail
 unalias -a
 
-TERMINAL_LOGGER_DIRECTORY="$HOME/.terminal-logger"
-install -d "$TERMINAL_LOGGER_DIRECTORY"
+_terminal_logger_directory="$HOME/.terminal-logger"
+install -d "$_terminal_logger_directory"
 {
-        TERMINAL_LOG_HEAD="$TERMINAL_LOGGER_DIRECTORY/terminal."
-        TERMINAL_LOG="${TERMINAL_LOG_HEAD}log"
-        TERMINAL_LOGS="$TERMINAL_LOGGER_DIRECTORY/terminal*.log"
-        TERMINAL_LOG_PATTERN='terminal\.([1-9][0-9]*)\.log'
-        if [[ -e "$TERMINAL_LOG" ]]
-        then exec 3> "${TERMINAL_LOG_HEAD}$(($({
-                for terminal_log in $TERMINAL_LOGS
+        _terminal_log_head="$_terminal_logger_directory/terminal."
+        _terminal_log="${_terminal_log_head}log"
+        _terminal_logs="$_terminal_logger_directory/terminal*.log"
+        _terminal_log_pattern='terminal\.([1-9][0-9]*)\.log'
+        if [[ -e "$_terminal_log" ]]
+        then exec 3> "${_terminal_log_head}$(($({
+                for terminal_log in $_terminal_logs
                 do
-                        if [[ $terminal_log =~ $TERMINAL_LOG_PATTERN ]]
+                        if [[ $terminal_log =~ $_terminal_log_pattern ]]
                         then echo "${BASH_REMATCH[1]}"
                         fi
                 done
         }|sort -n|tail -n1) + 1)).log"
-        else exec 3> "$TERMINAL_LOG"
+        else exec 3> "$_terminal_log"
         fi
-} 4> "$TERMINAL_LOGGER_DIRECTORY/lock"
-DATE_FORMAT='+%Y%m%dT%H%M%S%z'
+} 4> "$_terminal_logger_directory/lock"
+_date_format='+%Y%m%dT%H%M%S%z'
 
 function format {
         while IFS= read -r x
         do stdbuf -o0 -e0 printf "%s %s%s%s\n" "$(
-                stdbuf -o0 -e0 date "$DATE_FORMAT")" "$1" "$x" "$2"
+                stdbuf -o0 -e0 date "$_date_format")" "$1" "$x" "$2"
         done
 }
 
-date "$DATE_FORMAT" >&3
+date "$_date_format" >&3
 echo "$@" >&3
 { { { { { {
         "$@" 4>&-|tee /dev/stderr 2>&4 4>&-
