@@ -16,6 +16,16 @@
 set -eo pipefail
 unalias -a
 
+_get_home () {
+        # cf. <https://superuser.com/a/484330>
+        getent passwd "$1"|cut -d: -f6
+}
+
+[[ $HOME == $(_get_home $EUID) ]] || {
+echo "$0: You execute this program on a login shell"
+exit 1
+}
+
 _terminal_logger_directory="$HOME/.terminal-logger"
 install -d "$_terminal_logger_directory"
 {
