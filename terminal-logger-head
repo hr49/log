@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+set -eo pipefail
+unalias -a
+
+_get_home () {
+        # cf. <https://superuser.com/a/484330>
+        getent passwd "$1"|cut -d: -f6
+}
+
+[[ $HOME == $(_get_home $EUID) ]] || {
+echo "$0: You execute this program on a login shell"
+exit 1
+}
+
+_terminal_logger_directory="$HOME/.terminal-logger"
+_the_terminal_log="$_terminal_logger_directory/terminal.$1.log"
+
+if [[ -e "$_the_terminal_log" ]]
+then sed -n '2p' "$_the_terminal_log"
+else echo "$0: No such file or directory"
+fi
