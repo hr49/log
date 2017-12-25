@@ -24,12 +24,30 @@ _get_home () {
 [[ $HOME == $(_get_home $EUID) ]] || {
 echo "$0: You must execute this program on a login shell"
 exit 1
-}
+} >&2
 
-_terminal_logger_directory="$HOME/.terminal-logger"
-_the_terminal_log="$_terminal_logger_directory/terminal.$1.log"
+_usage="usage: $0 VERSION"
 
-if [[ -e "$_the_terminal_log" ]]
-then sed -n '2p' "$_the_terminal_log"
-else echo "$0: No such file or directory"
+[[ -n $1 ]] || {
+echo "$_usage"
+echo "$0: error: the following arguments are required: VERSION"
+exit 1
+} >&2
+
+let _version=$1
+
+(( $_version >= 0 )) || {
+echo "$_usage"
+echo "$0: error: argument VERSION: '$_version' is not a non-negative integer"
+exit 1
+} >&2
+
+_tty_log_filename_prefix="$HOME/.terminal-logger/terminal"
+
+if (( $_version == 0 ))
+then exec 3< "$_tty_log_filename_prefix.log"
+else exec 3< "$_tty_log_filename_prefix.$_version.log"
 fi
+
+sed -n '2p' <&3
+exec 3>&-

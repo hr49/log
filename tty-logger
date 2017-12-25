@@ -24,27 +24,26 @@ _get_home () {
 [[ $HOME == $(_get_home $EUID) ]] || {
 echo "$0: You must execute this program on a login shell"
 exit 1
-}
+} >&2
 
-_terminal_logger_directory="$HOME/.terminal-logger"
-install -d "$_terminal_logger_directory"
+_tty_logger_directory="$HOME/.terminal-logger"
+install -d "$_tty_logger_directory"
 {
-        _terminal_log_head="$_terminal_logger_directory/terminal."
-        _the_terminal_log="${_terminal_log_head}log"
-        _terminal_logs="$_terminal_logger_directory/terminal*.log"
-        _terminal_log_pattern='terminal\.([1-9][0-9]*)\.log'
-        if [[ -e "$_the_terminal_log" ]]
-        then exec 3> "${_terminal_log_head}$(($({
-                for _terminal_log in $_terminal_logs
+        _tty_log_filename_prefix="$_tty_logger_directory/terminal"
+        _default_tty_log_filename="$_tty_log_filename_prefix.log"
+        _tty_log_filename_version_pattern='terminal\.([1-9][0-9]*)\.log'
+        if [[ -e "$_default_tty_log_filename" ]]
+        then exec 3> "$_tty_log_filename_prefix.$(($({
+                for _string in $_tty_logger_directory/*
                 do
-                        if [[ $_terminal_log =~ $_terminal_log_pattern ]]
+                        if [[ $_string =~ $_tty_log_filename_version_pattern ]]
                         then echo "${BASH_REMATCH[1]}"
                         fi
                 done
         }|sort -n|tail -n1) + 1)).log"
-        else exec 3> "$_the_terminal_log"
+        else exec 3> "$_default_tty_log_filename"
         fi
-} 4> "$_terminal_logger_directory/lock"
+} 4> "$_tty_logger_directory/lock"
 _date_format='+%Y%m%dT%H%M%S%z'
 
 function format {
