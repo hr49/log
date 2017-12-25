@@ -22,7 +22,7 @@ _get_home () {
 }
 
 [[ $HOME == $(_get_home $EUID) ]] || {
-echo "$0: You execute this program on a login shell"
+echo "$0: You must execute this program on a login shell"
 exit 1
 }
 
