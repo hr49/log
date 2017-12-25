@@ -32,7 +32,7 @@ install -d "$_tty_logger_directory"
         _tty_log_filename_prefix="$_tty_logger_directory/terminal"
         _default_tty_log_filename="$_tty_log_filename_prefix.log"
         _tty_log_filename_version_pattern='terminal\.([1-9][0-9]*)\.log'
-        if [[ -e "$_default_tty_log_filename" ]]
+        if [[ -e $_default_tty_log_filename ]]
         then exec 3> "$_tty_log_filename_prefix.$(($({
                 for _string in $_tty_logger_directory/*
                 do
