@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+set -eo pipefail
+unalias -a
+
+_get_home () {
+        # cf. <https://superuser.com/a/484330>
+        getent passwd "$1"|cut -d: -f6
+}
+
+[[ $HOME == $(_get_home $EUID) ]] || {
+echo "$0: You must execute this program on a login shell"
+exit 1
+} >&2
+
+_tty_logger_directory="$HOME/.terminal-logger"
+_tty_log_filename_prefix="$_tty_logger_directory/terminal"
+_default_tty_log_filename="$_tty_log_filename_prefix.log"
+
+{[[ -e $_default_tty_log_filename ]] && _default_tty_log_exists="$?"} ||
+        _default_tty_log_exists="$?"
+
+_format () {
+        echo -e "\E[33mlog $1\E[m\n"\
+"Date: $(date -d "$(head -n1 "$1")" '+%a %b %d %H:%M:%S %Y %z')\n"\
+"\n"\
+"    $(sed -n '2p' "$1")"
+}
+
+{
+for _tty_log_filename_version in $({
+        _tty_log_filename_version_pattern='terminal\.([1-9][0-9]*)\.log'
+
+        for _string in $_tty_logger_directory/*
+        do
+                if [[ $_string =~ $_tty_log_filename_version_pattern ]]
+                then echo "${BASH_REMATCH[1]}"
+                fi
+        done
+}|sort -nr)
+do
+        _tty_log_filename="$_tty_log_filename_prefix."\
+"$_tty_log_filename_version"\
+.log
+        _format "$_tty_log_filename"
+        [[ ! $_default_tty_log_exists ]] || echo
+done
+
+_format "$_default_tty_log_filename"
+}|less -FRX
