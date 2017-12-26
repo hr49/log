@@ -42,7 +42,7 @@ echo -e "$_usage"\
 exit 1
 } >&2
 
-_tty_log_filename_prefix="$HOME/.terminal-logger/terminal"
+_tty_log_filename_prefix="$HOME/var/log/tty"
 
 if (( $_version == 0 ))
 then exec 3< "$_tty_log_filename_prefix.log"

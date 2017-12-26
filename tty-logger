@@ -26,12 +26,12 @@ echo "$0: You must execute this program on a login shell"
 exit 1
 } >&2
 
-_tty_logger_directory="$HOME/.terminal-logger"
+_tty_logger_directory="$HOME/var/log"
 install -d "$_tty_logger_directory"
 {
-        _tty_log_filename_prefix="$_tty_logger_directory/terminal"
+        _tty_log_filename_prefix="$_tty_logger_directory/tty"
         _default_tty_log_filename="$_tty_log_filename_prefix.log"
-        _tty_log_filename_version_pattern='terminal\.([1-9][0-9]*)\.log'
+        _tty_log_filename_version_pattern='tty\.([1-9][0-9]*)\.log'
 
         if [[ -e $_default_tty_log_filename ]]
         then exec 3> "$_tty_log_filename_prefix.$(($({
@@ -44,7 +44,7 @@ install -d "$_tty_logger_directory"
         }|sort -nr|head -n1) + 1)).log"
         else exec 3> "$_default_tty_log_filename"
         fi
-} 4> "$_tty_logger_directory/lock"
+} 4> "$_tty_logger_directory/.lock"
 _date_format='+%Y-%m-%dT%H:%M:%S%:z'
 
 _format () {
