@@ -13,33 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-set -eo pipefail
-unalias -a
+. tty-logger-init
 
-_get_home () {
-    # cf. <https://superuser.com/a/484330>
-    getent passwd "$1"|cut -d: -f6
-}
-
-[[ $HOME == $(_get_home $EUID) ]] || {
-echo "$0: You must execute this program on a login shell"
-exit 1
-} >&2
-
-_tty_logger_directory="$HOME/var/log"
 install -d "$_tty_logger_directory"
 {
-_default_tty_log_filename="$_tty_logger_directory/tty.log"
-
 if [[ -e $_default_tty_log_filename ]]
-then exec 3> "$_default_tty_log_filename.$(($({
-    for _string in $_tty_logger_directory/*
-    do
-        if [[ ${_string#$_default_tty_log_filename} =~ ^\.([1-9][0-9]*)$ ]]
-        then echo "${BASH_REMATCH[1]}"
-        fi
-    done
-}|sort -nr|head -n1) + 1))"
+then exec 3> "$_default_tty_log_filename.$(($(
+    _generate_tty_logs_filename_version|sort -nr|head -n1) + 1))"
 else exec 3> "$_default_tty_log_filename"
 fi
 } 4> "$_tty_logger_directory/.lock"
