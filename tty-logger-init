@@ -30,7 +30,7 @@ _tty_logger_directory="$HOME/var/log"
 _default_tty_log_filename="$_tty_logger_directory/tty.log"
 
 _generate_tty_logs_filename_version () {
-    for local _string in $_tty_logger_directory/*
+    for _string in $_tty_logger_directory/*
     do
         if [[ ${_string#$_default_tty_log_filename} =~ ^\.([1-9][0-9]*)$ ]]
         then echo "${BASH_REMATCH[1]}"
