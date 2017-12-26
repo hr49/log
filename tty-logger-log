@@ -52,10 +52,9 @@ for _tty_log_filename_version in $({
         done
 }|sort -nr)
 do
-        _tty_log_filename="$_tty_log_filename_prefix."\
+        _format "$_tty_log_filename_prefix."\
 "$_tty_log_filename_version"\
 .log
-        _format "$_tty_log_filename"
         [[ ! $_default_tty_log_exists ]] || echo
 done
 
