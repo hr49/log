@@ -13,18 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-set -eo pipefail
-unalias -a
-
-_get_home () {
-    # cf. <https://superuser.com/a/484330>
-    getent passwd "$1"|cut -d: -f6
-}
-
-[[ $HOME == $(_get_home $EUID) ]] || {
-echo "$0: You must execute this program on a login shell"
-exit 1
-} >&2
+. tty-logger-init
 
 _usage="usage: $0 VERSION"
 
@@ -41,8 +30,6 @@ echo -e "$_usage\n"\
 "$0: error: argument VERSION: '$_version' is not a non-negative integer"
 exit 1
 } >&2
-
-_default_tty_log_filename="$HOME/var/log/tty.log"
 
 if (( $_version == 0 ))
 then exec 3< "$_default_tty_log_filename"
