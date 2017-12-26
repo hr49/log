@@ -17,8 +17,8 @@ set -eo pipefail
 unalias -a
 
 _get_home () {
-        # cf. <https://superuser.com/a/484330>
-        getent passwd "$1"|cut -d: -f6
+    # cf. <https://superuser.com/a/484330>
+    getent passwd "$1"|cut -d: -f6
 }
 
 [[ $HOME == $(_get_home $EUID) ]] || {
@@ -34,19 +34,19 @@ echo -e "$_usage\n"\
 exit 1
 } >&2
 
-let _version=$1
+_version="$(($1))"
 
 (( $_version >= 0 )) || {
-echo -e "$_usage"\
+echo -e "$_usage\n"\
 "$0: error: argument VERSION: '$_version' is not a non-negative integer"
 exit 1
 } >&2
 
-_tty_log_filename_prefix="$HOME/var/log/tty"
+_default_tty_log_filename="$HOME/var/log/tty.log"
 
 if (( $_version == 0 ))
-then exec 3< "$_tty_log_filename_prefix.log"
-else exec 3< "$_tty_log_filename_prefix.$_version.log"
+then exec 3< "$_default_tty_log_filename"
+else exec 3< "$_default_tty_log_filename.$_version"
 fi
 
 sed -n '2p' <&3

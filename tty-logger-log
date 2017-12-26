@@ -17,8 +17,8 @@ set -eo pipefail
 unalias -a
 
 _get_home () {
-        # cf. <https://superuser.com/a/484330>
-        getent passwd "$1"|cut -d: -f6
+    # cf. <https://superuser.com/a/484330>
+    getent passwd "$1"|cut -d: -f6
 }
 
 [[ $HOME == $(_get_home $EUID) ]] || {
@@ -27,14 +27,14 @@ exit 1
 } >&2
 
 _tty_logger_directory="$HOME/var/log"
-_tty_log_filename_prefix="$_tty_logger_directory/tty"
-_default_tty_log_filename="$_tty_log_filename_prefix.log"
-
-{[[ -e $_default_tty_log_filename ]] && _default_tty_log_exists="$?"} ||
-        _default_tty_log_exists="$?"
+_default_tty_log_filename="$_tty_logger_directory/tty.log"
+_default_tty_log_exists="$({
+[[ -e $_default_tty_log_filename ]]
+echo "$?"
+})"
 
 _format () {
-        echo -e "\E[33mlog $1\E[m\n"\
+    echo -e "\E[33mlog $1\E[m\n"\
 "Date: $(date -d "$(head -n1 "$1")" '+%a %b %d %H:%M:%S %Y %z')\n"\
 "\n"\
 "    $(sed -n '2p' "$1")"
@@ -42,21 +42,17 @@ _format () {
 
 {
 for _tty_log_filename_version in $({
-        _tty_log_filename_version_pattern='tty\.([1-9][0-9]*)\.log'
-
-        for _string in $_tty_logger_directory/*
-        do
-                if [[ $_string =~ $_tty_log_filename_version_pattern ]]
-                then echo "${BASH_REMATCH[1]}"
-                fi
-        done
+    for _string in $_tty_logger_directory/*
+    do
+        if [[ ${_string#$_default_tty_log_filename} =~ ^\.([1-9][0-9]*)$ ]]
+        then echo "${BASH_REMATCH[1]}"
+        fi
+    done
 }|sort -nr)
 do
-        _format "$_tty_log_filename_prefix."\
-"$_tty_log_filename_version"\
-.log
-        [[ ! $_default_tty_log_exists ]] || echo
+    _format "$_default_tty_log_filename.$_tty_log_filename_version"
+    [[ ! $_default_tty_log_exists ]] || echo
 done
 
-_format "$_default_tty_log_filename"
+[[ ! $_default_tty_log_exists ]] || _format "$_default_tty_log_filename"
 }|less -FRX
