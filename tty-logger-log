@@ -60,4 +60,4 @@ do
 done
 
 _format "$_default_tty_log_filename"
-}|less -FrX
+}|less -FRX
