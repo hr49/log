@@ -32,6 +32,7 @@ install -d "$_tty_logger_directory"
         _tty_log_filename_prefix="$_tty_logger_directory/terminal"
         _default_tty_log_filename="$_tty_log_filename_prefix.log"
         _tty_log_filename_version_pattern='terminal\.([1-9][0-9]*)\.log'
+
         if [[ -e $_default_tty_log_filename ]]
         then exec 3> "$_tty_log_filename_prefix.$(($({
                 for _string in $_tty_logger_directory/*
@@ -40,13 +41,13 @@ install -d "$_tty_logger_directory"
                         then echo "${BASH_REMATCH[1]}"
                         fi
                 done
-        }|sort -n|tail -n1) + 1)).log"
+        }|sort -nr|head -n1) + 1)).log"
         else exec 3> "$_default_tty_log_filename"
         fi
 } 4> "$_tty_logger_directory/lock"
-_date_format='+%Y%m%dT%H%M%S%z'
+_date_format='+%Y-%m-%dT%H:%M:%S%:z'
 
-function format {
+_format () {
         while IFS= read -r x
         do stdbuf -o0 -e0 printf "%s %s%s%s\n" "$(
                 stdbuf -o0 -e0 date "$_date_format")" "$1" "$x" "$2"
@@ -59,7 +60,7 @@ echo "$@" >&3
         "$@" 4>&-|tee /dev/stderr 2>&4 4>&-
 } 2>&1 >&6|tee /dev/stderr 2>&5 4>&- 5>&- 6>&-
 } >&7
-} 6>&1|format >&3 4>&- 5>&- 6>&- 7>&-
-} 7>&1|format '[1;41m' '[0m' >&3 4>&- 5>&- 6>&- 7>&-
+} 6>&1|_format >&3 4>&- 5>&- 6>&- 7>&-
+} 7>&1|_format '[1;41m' '[0m' >&3 4>&- 5>&- 6>&- 7>&-
 } 4>&1
 } 5>&2

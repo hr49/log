@@ -29,16 +29,16 @@ exit 1
 _usage="usage: $0 VERSION"
 
 [[ -n $1 ]] || {
-echo "$_usage"
-echo "$0: error: the following arguments are required: VERSION"
+echo -e "$_usage\n"\
+"$0: error: the following arguments are required: VERSION"
 exit 1
 } >&2
 
 let _version=$1
 
 (( $_version >= 0 )) || {
-echo "$_usage"
-echo "$0: error: argument VERSION: '$_version' is not a non-negative integer"
+echo -e "$_usage"\
+"$0: error: argument VERSION: '$_version' is not a non-negative integer"
 exit 1
 } >&2
 
