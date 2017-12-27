@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+
+import argparse
+
+
+def nonnegative_integer(x):
+    try:
+        integer = int(x)
+    except ValueError as x_not_integer_error:
+        raise argparse.ArgumentTypeError("'{x}' is not an integer: {}".format(
+            str(x_not_integer_error), **locals()))
+
+    if not integer >= 0:
+        raise argparse.ArgumentTypeError(
+            "'{x}' is not non-negative".format(**locals()))
+
+    return integer
+
+
+argument_parser = argparse.ArgumentParser()
+subcommand_argument_parsers = argument_parser.add_subparsers()
+
+
+def logger(arguments):
+    print("logger {}".format(" ".join(arguments.args)))
+
+
+logger_argument_parser = subcommand_argument_parsers.add_parser("logger")
+logger_argument_parser.add_argument("args", nargs=argparse.REMAINDER)
+logger_argument_parser.set_defaults(subcommand=logger)
+
+
+def log(arguments):
+    print("log")
+
+
+log_argument_parser = subcommand_argument_parsers.add_parser("log")
+log_argument_parser.set_defaults(subcommand=log)
+
+
+def show(arguments):
+    print("show {}".format(str(arguments.tty_log_version)))
+
+
+show_argument_parser = subcommand_argument_parsers.add_parser("show")
+show_argument_parser.add_argument("tty_log_version", type=nonnegative_integer)
+show_argument_parser.set_defaults(subcommand=show)
+
+arguments = argument_parser.parse_args()
+arguments.subcommand(arguments)
