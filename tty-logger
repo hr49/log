@@ -13,32 +13,126 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-. tty-logger-init
+set -eo pipefail
+unalias -a
 
-install -d "$_tty_logger_directory"
-{
-if [[ -e $_default_tty_log_filename ]]
-then exec 3> "$_default_tty_log_filename.$(($(
-    _generate_tty_logs_filename_version|sort -nr|head -n1) + 1))"
-else exec 3> "$_default_tty_log_filename"
-fi
-} 4> "$_tty_logger_directory/.lock"
-_date_format='+%Y-%m-%dT%H:%M:%S%:z'
+_get_home () {
+    # cf. <https://superuser.com/a/484330>
+    getent passwd "$1"|cut -d: -f6
+}
 
-_format () {
+[[ $HOME == $(_get_home $EUID) ]] || {
+echo "$0: You must execute this program on a login shell"
+exit 1
+} >&2
+
+_usage="usage: $0 [COMMAND] ..."
+
+[[ -n $1 ]] || {
+echo "$_usage"
+exit 1
+}
+
+_tty_logger_directory="$HOME/var/log"
+_default_tty_log_filename="$_tty_logger_directory/tty.log"
+
+_generate_tty_logs_filename_version () {
+    for _string in $_tty_logger_directory/*
+    do
+        if [[ ${_string#$_default_tty_log_filename} =~ ^\.([1-9][0-9]*)$ ]]
+        then echo "${BASH_REMATCH[1]}"
+        fi
+    done
+}
+
+_format_lines () {
     while IFS= read -r x
     do stdbuf -o0 -e0 printf "%s %s%s%s\n" "$(
         stdbuf -o0 -e0 date "$_date_format")" "$1" "$x" "$2"
     done
 }
 
-date "$_date_format" >&3
-echo "$@" >&3
-{ { { { { {
-    "$@" 4>&-|tee /dev/stderr 2>&4 4>&-
-} 2>&1 >&6|tee /dev/stderr 2>&5 4>&- 5>&- 6>&-
-} >&7
-} 6>&1|_format >&3 4>&- 5>&- 6>&- 7>&-
-} 7>&1|_format '[1;41m' '[0m' >&3 4>&- 5>&- 6>&- 7>&-
-} 4>&1
-} 5>&2
+_format_tty_log_filename () {
+    echo -e "\E[33mlog $1\E[m\n"\
+"Date: $(date -d "$(head -n1 "$1")" '+%a %b %d %H:%M:%S %Y %z')\n"\
+"\n"\
+"    $(sed -n '2p' "$1")"
+}
+
+case "$1" in
+--)
+    install -d "$_tty_logger_directory"
+    {
+        if [[ -e $_default_tty_log_filename ]]
+        then exec 3> "$_default_tty_log_filename.$(($(
+            _generate_tty_logs_filename_version|sort -nr|head -n1) + 1))"
+        else exec 3> "$_default_tty_log_filename"
+        fi
+    } 4> "$_tty_logger_directory/.lock"
+    _date_format='+%Y-%m-%dT%H:%M:%S%:z'
+
+    date "$_date_format" >&3
+    echo "${@:2}" >&3
+    { { { { { {
+        "${@:2}" 4>&-|tee /dev/stderr 2>&4 4>&-
+    } 2>&1 >&6|tee /dev/stderr 2>&5 4>&- 5>&- 6>&-
+    } >&7
+    } 6>&1|_format_lines >&3 4>&- 5>&- 6>&- 7>&-
+    } 7>&1|_format_lines '[1;41m' '[0m' >&3 4>&- 5>&- 6>&- 7>&-
+    } 4>&1
+    } 5>&2
+    ;;
+
+head)
+    _head_usage="usage: $0 head VERSION"
+
+    [[ -n $1 ]] || {
+    echo -e "$_head_usage\n"\
+    "$0: error: the following arguments are required: VERSION"
+    exit 1
+    } >&2
+
+    _version="$(($1))"
+
+    (( $_version >= 0 )) || {
+    echo -e "$_head_usage\n"\
+    "$0: error: argument VERSION: '$_version' is not a non-negative integer"
+    exit 1
+    } >&2
+
+    if (( $_version == 0 ))
+    then exec 3< "$_default_tty_log_filename"
+    else exec 3< "$_default_tty_log_filename.$_version"
+    fi
+
+    sed -n '2p' <&3
+    exec 3>&-
+    ;;
+
+log)
+    _default_tty_log_exists="$({
+    [[ -e $_default_tty_log_filename ]]
+    echo "$?"
+    })"
+
+    {
+    for _tty_log_filename_version in $(
+        _generate_tty_logs_filename_version|sort -nr)
+    do
+        _format_tty_log_filename\
+"$_default_tty_log_filename.$_tty_log_filename_version"
+        [[ ! $_default_tty_log_exists ]] || echo
+    done
+
+    [[ ! $_default_tty_log_exists ]] || _format_tty_log_filename\
+"$_default_tty_log_filename"
+    }|less -FRX
+    ;;
+
+*)
+    {
+    echo -e "$_usage\n"\
+"$0: error: argument COMMAND: '$1': is not a tty-logger command"
+    exit 1
+    } >&2
+esac
