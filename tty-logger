@@ -34,7 +34,7 @@ _format () {
 date "$_date_format" >&3
 echo "$@" >&3
 { { { { { {
-    "$@" |tee /dev/stderr 2>&4
+    "$@"|tee /dev/stderr 2>&4
 } 2>&1 >&6|tee /dev/stderr 2>&5
 } >&7
 } 6>&1|_format >&3
