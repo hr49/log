@@ -27,8 +27,7 @@ _date_format='+%Y-%m-%dT%H:%M:%S%:z'
 
 _format () {
     while IFS= read -r x
-    do stdbuf -o0 -e0 printf "%s %s%s%s\n" "$(
-        stdbuf -o0 -e0 date "$_date_format")" "$1" "$x" "$2"
+    do printf "%s %s%s%s\n" "$(date "$_date_format")" "$1" "$x" "$2"
     done
 }
 
