@@ -21,18 +21,19 @@ source libsudo.sh
 
 source libtlogger.sh
 
-readonly TTY_LOGGER_LOCK_BASENAME='.lock'
-readonly TTY_LOGGER_LOCK_PATH="$TTY_LOGGER_DIRECTORY"`
-                             `'/'`
-                             `"$TTY_LOGGER_LOCK_BASENAME"
+readonly TTY_LOGGER_LOCK_PATH_EXT='lock'
+readonly TTY_LOGGER_LOCK_PATH_BASENAME=`
+ `"$BASENAME_DELIMITER$TTY_LOGGER_LOCK_PATH_EXT"
+readonly TTY_LOGGER_LOCK_PATH=`
+ `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOGGER_LOCK_PATH_BASENAME"
 readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
                      `'/'`
                      `"$TTY_LOG_BASENAME_VERSION_HEAD"`
-                     `"$TTY_LOG_BASENAME_DELIMITER"`
-                     `"$TTY_LOG_EXT"
+                     `"$BASENAME_DELIMITER"`
+                     `"$TTY_LOG_PATH_EXT"
 
 sudo::the_home_is_the_user_home_or_die
-install -d "$TTY_LOGGER_DIRECTORY"
+install --directory -- "$TTY_LOGGER_DIRECTORY"
 
 {
   if [[ -e $TTY_LOG_PATH ]]; then
@@ -52,4 +53,4 @@ install -d "$TTY_LOGGER_DIRECTORY"
 args="${*@Q}"
 echo "$args" >&4
 exec 4>&-
-script --append --command "$args" --return --quiet "$tty_log_path"
+script --append --command "$args" --return --quiet -- "$tty_log_path"
