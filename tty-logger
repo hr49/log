@@ -49,5 +49,7 @@ install -d "$TTY_LOGGER_DIRECTORY"
   exec 4> "$tty_log_path"
 } 3> "$TTY_LOGGER_LOCK_PATH"
 
+args="${*@Q}"
+echo "$args" >&4
 exec 4>&-
-script --command "$*" --return --quiet "$tty_log_path"
+script --append --command "$args" --return --quiet "$tty_log_path"
