@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 if [[ -z ${LIBTLOGGER_SH+x} ]]; then
-  LIBTLOGGER_SH=''
+  LIBTLOGGER_SH=
 
   readonly BASENAME_DELIMITER='.'
   readonly REGEXESCAPED_BASENAME_DELIMITER='\.'
@@ -52,7 +52,7 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
   }
 
   tlogger::get_the_tty_log_versions() {
-    while IFS='' read -d $'\0' -r tty_log_path; do
+    while IFS= read -d $'\0' -r tty_log_path; do
       tlogger::get_tty_log_path_version "$tty_log_path"
     done < <(find "$TTY_LOGGER_DIRECTORY" -regex "$TTY_LOG_PATH_REGEX" -print0)
   }
