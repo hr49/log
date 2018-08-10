@@ -17,6 +17,8 @@
 
 set -e -o pipefail
 
+source libsudo.sh
+
 source libtlogger.sh
 
 readonly TTY_LOGGER_LOCK_BASENAME='.lock'
@@ -28,6 +30,8 @@ readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
                      `"$TTY_LOG_BASENAME_VERSION_HEAD"`
                      `"$TTY_LOG_BASENAME_DELIMITER"`
                      `"$TTY_LOG_EXT"
+
+sudo::the_home_is_the_user_home_or_die
 
 install -d "$TTY_LOGGER_DIRECTORY"
 {
