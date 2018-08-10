@@ -17,6 +17,7 @@
 
 set -e -o pipefail
 
+source liblock.sh
 source libsudo.sh
 
 source libtlogger.sh
@@ -41,22 +42,21 @@ get_the_tty_log_version() {
 main() {
   sudo::the_home_is_the_user_home_or_die
   install --directory -- "$TTY_LOGGER_DIRECTORY"
+  lock::make_lock "$TTY_LOGGER_LOCK_PATH"
 
-  {
-    if [[ -e $TTY_LOG_PATH ]]; then
-      declare -r tty_log_path="$TTY_LOG_PATH_VERSION_HEAD"`
-                           `"$(get_the_tty_log_version)"`
-                           `"$TTY_LOG_PATH_VERSION_TAIL"
-    else
-      declare -r tty_log_path="$TTY_LOG_PATH"
-    fi
+  if [[ -e $TTY_LOG_PATH ]]; then
+    local -r tty_log_path="$TTY_LOG_PATH_VERSION_HEAD"`
+                         `"$(get_the_tty_log_version)"`
+                         `"$TTY_LOG_PATH_VERSION_TAIL"
+  else
+    local -r tty_log_path="$TTY_LOG_PATH"
+  fi
 
-    exec 4> "$tty_log_path"
-  } 3> "$TTY_LOGGER_LOCK_PATH"
-
-  declare -r args="${*@Q}"
-  echo "$args" >&4
-  exec 4>&-
+  exec 3>"$tty_log_path"
+  lock::free_lock "$TTY_LOGGER_LOCK_PATH"
+  local -r args="${*@Q}"
+  echo "$args" >&3
+  exec 3>&-
   script --append --command "$args" --return --quiet -- "$tty_log_path"
 }
 
