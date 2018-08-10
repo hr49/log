@@ -32,35 +32,22 @@ readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
                      `"$TTY_LOG_EXT"
 
 sudo::the_home_is_the_user_home_or_die
-
 install -d "$TTY_LOGGER_DIRECTORY"
+
 {
   if [[ -e $TTY_LOG_PATH ]]; then
-    exec 3> "$TTY_LOG_PATH_VERSION_HEAD"`
-           `"$(($(
+    tty_log_path="$TTY_LOG_PATH_VERSION_HEAD"`
+                `"$(($(
       tlogger::get_the_tty_log_versions \
         | sort --numeric-sort --reverse \
         | head --lines=1) + 1))"`
-           `"$TTY_LOG_PATH_VERSION_TAIL"
+                `"$TTY_LOG_PATH_VERSION_TAIL"
   else
-    exec 3> "$TTY_LOG_PATH"
+    tty_log_path="$TTY_LOG_PATH"
   fi
-} 4> "$TTY_LOGGER_LOCK_PATH"
-_date_format='+%Y-%m-%dT%H:%M:%S%:z'
 
-_format () {
-    while IFS= read -r x
-    do printf "%s %s%s%s\n" "$(date "$_date_format")" "$1" "$x" "$2"
-    done
-}
+  exec 4> "$tty_log_path"
+} 3> "$TTY_LOGGER_LOCK_PATH"
 
-date "$_date_format" >&3
-echo "$@" >&3
-{ { { { { {
-    "$@"|tee /dev/stderr 2>&4
-} 2>&1 >&6|tee /dev/stderr 2>&5
-} >&7
-} 6>&1|_format >&3
-} 7>&1|_format '[1;41m' '[0m' >&3
-} 4>&1
-} 5>&2
+exec 4>&-
+script --command "$*" --return --quiet "$tty_log_path"
