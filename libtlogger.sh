@@ -13,34 +13,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-tlogger::init() {
-  readonly TTY_LOGGER_DIRECTORY="$HOME"'/var/log'
-  readonly TTY_LOG_BASENAME_DELIMITER='.'
-  readonly REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER='\.'
-  readonly TTY_LOG_BASENAME_VERSION_HEAD='tty'
-  readonly PATH_TTY_LOG_BASENAME_VERSION_HEAD="$TTY_LOG_BASENAME_VERSION_HEAD"`
-                                             `"$TTY_LOG_BASENAME_DELIMITER"
-  readonly TTY_LOG_PATH_VERSION_HEAD="$TTY_LOGGER_DIRECTORY"`
-                                    `'/'`
-                                    `"$PATH_TTY_LOG_BASENAME_VERSION_HEAD"
-  readonly REGEX_TTY_LOG_BASENAME_VERSION_HEAD=`
-   `"$TTY_LOG_BASENAME_VERSION_HEAD"`
-   `"$REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER"
-  readonly TTY_LOG_PATH_REGEX_VERSION_HEAD=`
-   `"$TTY_LOGGER_DIRECTORY"`
-   `'/'`
-   `"$REGEX_TTY_LOG_BASENAME_VERSION_HEAD"
-  readonly TTY_LOG_EXT='log'
-  readonly TTY_LOG_BASENAME_VERSION_TAIL="$TTY_LOG_EXT"
-  readonly TTY_LOG_PATH_VERSION_TAIL="$TTY_LOG_BASENAME_DELIMITER"`
-                                    `"$TTY_LOG_BASENAME_VERSION_TAIL"
-  readonly TTY_LOG_PATH_REGEX_VERSION_TAIL=`
-   `"$REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER"`
-   `"$TTY_LOG_BASENAME_VERSION_TAIL"
-  readonly TTY_LOG_PATH_REGEX="$TTY_LOG_PATH_REGEX_VERSION_HEAD"`
-                             `'[1-9][0-9]*'`
-                             `"$TTY_LOG_PATH_REGEX_VERSION_TAIL"
-}
+readonly TTY_LOGGER_DIRECTORY="$HOME"'/var/log'
+readonly TTY_LOG_BASENAME_DELIMITER='.'
+readonly REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER='\.'
+readonly TTY_LOG_BASENAME_VERSION_HEAD='tty'
+readonly PATH_TTY_LOG_BASENAME_VERSION_HEAD="$TTY_LOG_BASENAME_VERSION_HEAD"`
+                                           `"$TTY_LOG_BASENAME_DELIMITER"
+readonly TTY_LOG_PATH_VERSION_HEAD="$TTY_LOGGER_DIRECTORY"`
+                                  `'/'`
+                                  `"$PATH_TTY_LOG_BASENAME_VERSION_HEAD"
+readonly REGEX_TTY_LOG_BASENAME_VERSION_HEAD=`
+ `"$TTY_LOG_BASENAME_VERSION_HEAD"`
+ `"$REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER"
+readonly TTY_LOG_PATH_REGEX_VERSION_HEAD="$TTY_LOGGER_DIRECTORY"`
+                                        `'/'`
+                                        `"$REGEX_TTY_LOG_BASENAME_VERSION_HEAD"
+readonly TTY_LOG_EXT='log'
+readonly TTY_LOG_BASENAME_VERSION_TAIL="$TTY_LOG_EXT"
+readonly TTY_LOG_PATH_VERSION_TAIL="$TTY_LOG_BASENAME_DELIMITER"`
+                                  `"$TTY_LOG_BASENAME_VERSION_TAIL"
+readonly TTY_LOG_PATH_REGEX_VERSION_TAIL=`
+ `"$REGEXESCAPED_TTY_LOG_BASENAME_DELIMITER"`
+ `"$TTY_LOG_BASENAME_VERSION_TAIL"
+readonly TTY_LOG_PATH_REGEX="$TTY_LOG_PATH_REGEX_VERSION_HEAD"`
+                           `'[1-9][0-9]*'`
+                           `"$TTY_LOG_PATH_REGEX_VERSION_TAIL"
 
 tlogger::get_tty_log_path_version() {
   tty_log_path="${1#$TTY_LOG_PATH_VERSION_HEAD}"

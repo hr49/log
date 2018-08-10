@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright (C) 2018 Matthew Marting
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -11,18 +13,35 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-. tty-logger-init
+set -e -o pipefail
 
-install -d "$_tty_logger_directory"
+source libtlogger.sh
+
+readonly TTY_LOGGER_LOCK_BASENAME='.lock'
+readonly TTY_LOGGER_LOCK_PATH="$TTY_LOGGER_DIRECTORY"`
+                             `'/'`
+                             `"$TTY_LOGGER_LOCK_BASENAME"
+readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
+                     `'/'`
+                     `"$TTY_LOG_BASENAME_VERSION_HEAD"`
+                     `"$TTY_LOG_BASENAME_DELIMITER"`
+                     `"$TTY_LOG_EXT"
+
+install -d "$TTY_LOGGER_DIRECTORY"
 {
-if [[ -e $_default_tty_log_filename ]]
-then exec 3> "$_default_tty_log_filename.$(($(
-    _generate_tty_logs_filename_version|sort -nr|head -n1) + 1))"
-else exec 3> "$_default_tty_log_filename"
-fi
-} 4> "$_tty_logger_directory/.lock"
+  if [[ -e $TTY_LOG_PATH ]]; then
+    exec 3> "$TTY_LOG_PATH_VERSION_HEAD"`
+           `"$(($(
+      tlogger::get_the_tty_log_versions \
+        | sort --numeric-sort --reverse \
+        | head --lines=1) + 1))"`
+           `"$TTY_LOG_PATH_VERSION_TAIL"
+  else
+    exec 3> "$TTY_LOG_PATH"
+  fi
+} 4> "$TTY_LOGGER_LOCK_PATH"
 _date_format='+%Y-%m-%dT%H:%M:%S%:z'
 
 _format () {
