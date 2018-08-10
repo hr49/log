@@ -41,7 +41,7 @@ tlogger::get_tty_log_path_version() {
   # `$tty_log_path`, and I would strip the version head and then overwrite the
   # variable.  However, one cannot overwrite `$1`, so I assign `$tty_log_path`
   # first here.
-  tty_log_path="${1#"$TTY_LOG_PATH_VERSION_HEAD"}"
+  declare -r tty_log_path="${1#"$TTY_LOG_PATH_VERSION_HEAD"}"
 
   echo "${tty_log_path%"$TTY_LOG_PATH_VERSION_TAIL"}"
 }
