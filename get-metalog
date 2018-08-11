@@ -23,6 +23,18 @@ source libtlogger.sh
 
 readonly METALOG_DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
 
+get_log_path() {
+  version::get_path "$LOG_PATH_VERSION_HEAD" "$LOG_PATH_VERSION_TAIL" "$1"
+}
+
+get_the_log_versions_descending() {
+  version::get_the_versions_descending \
+    "$LOG_PATH_DIRNAME" \
+    "$LOG_PATH_VERSION_HEAD" \
+    "$LOG_PATH_VERSION_TAIL" \
+    "$LOG_PATH_REGEX"
+}
+
 get_log_date() {
   local -r log_date_line="$(sed --quiet -- '2p' "$1")"
   echo "${log_date_line#Script started on }"
@@ -49,8 +61,8 @@ str_metalog() {
   local log_paths=()
 
   while IFS= read -r log_version; do
-    log_paths+=("$(tlogger::get_log_path "$log_version")")
-  done < <(tlogger::get_the_log_versions_descending)
+    log_paths+=("$(get_log_path "$log_version")")
+  done < <(get_the_log_versions_descending)
 
   if [[ -e "$LOG_PATH" ]]; then
     log_paths+=("$LOG_PATH")
