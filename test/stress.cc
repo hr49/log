@@ -15,11 +15,10 @@ int main() {
    */
   constexpr size_t NUMBER_OF_LINES = 1'000'000;
 
-  for (size_t NumberOfRemainingLines = NUMBER_OF_LINES;
-       NumberOfRemainingLines > 0u; --NumberOfRemainingLines) {
+  for (size_t LineIndex = 0u; LineIndex < NUMBER_OF_LINES; ++LineIndex) {
     if (PseudorandomBooleanGenerator(PseudorandomIntegerGenerator))
-      std::fprintf(stderr, "%20zu\n", NumberOfRemainingLines);
+      std::fprintf(stderr, "%20zu\n", LineIndex);
     else
-      std::fprintf(stdout, "%20zu\n", NumberOfRemainingLines);
+      std::fprintf(stdout, "%20zu\n", LineIndex);
   }
 }
