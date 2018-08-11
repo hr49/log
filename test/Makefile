@@ -1,5 +1,8 @@
-stress-test: stress_test.cc
-	g++ -std=c++17 -o stress-test stress_test.cc
+.PHONY: all
+all: stress
+
+stress: stress.cc
+	g++ -std=c++17 -o $@ $<
 
 clean:
-	@rm stress-test
+	rm -f stress
