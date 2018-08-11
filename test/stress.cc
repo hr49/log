@@ -3,21 +3,23 @@
 #include <random>
 
 int main() {
-  std::random_device pseudorandom_integer_generator_seeder;
-  std::mt19937 pseudorandom_integer_generator(
-      pseudorandom_integer_generator_seeder());
-  std::uniform_int_distribution<uint_fast8_t> pseudorandom_boolean_generator(
-      0, 1);
+  std::random_device PseudorandomIntegerGeneratorSeeder;
+  std::mt19937 PseudorandomIntegerGenerator(
+      PseudorandomIntegerGeneratorSeeder());
+  std::uniform_int_distribution<uint_fast8_t> PseudorandomBooleanGenerator(0u,
+                                                                           1u);
 
-  {
-    constexpr size_t MAXIMUM_LINE_NUMBER = 1'000'000;
+  /*
+   * `1'000'000` is inspired by the default of the same value of the argument
+   * `number` to Python's `timeit.timeit`.
+   */
+  constexpr size_t NUMBER_OF_LINES = 1'000'000;
 
-    for (size_t line_number = 0; line_number < MAXIMUM_LINE_NUMBER;
-         ++line_number) {
-      if (pseudorandom_boolean_generator(pseudorandom_integer_generator))
-        std::fprintf(stderr, "%20zu\n", line_number);
-      else
-        std::fprintf(stdout, "%20zu\n", line_number);
-    }
+  for (size_t NumberOfRemainingLines = NUMBER_OF_LINES;
+       NumberOfRemainingLines > 0u; --NumberOfRemainingLines) {
+    if (PseudorandomBooleanGenerator(PseudorandomIntegerGenerator))
+      std::fprintf(stderr, "%20zu\n", NumberOfRemainingLines);
+    else
+      std::fprintf(stdout, "%20zu\n", NumberOfRemainingLines);
   }
 }
