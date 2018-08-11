@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright (C) 2018 Matthew Marting
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -11,29 +13,64 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-. tty-logger-init
+set -e -o pipefail
 
-_default_tty_log_exists="$({
-[[ -e $_default_tty_log_filename ]]
-echo "$?"
-})"
+source libdie.sh
 
-_format () {
-    echo -e "\E[33mlog $1\E[m\n"\
-"Date: $(date -d "$(head -n1 "$1")" '+%a %b %d %H:%M:%S %Y %z')\n"\
-"\n"\
-"    $(sed -n '2p' "$1")"
+source libtlogger.sh
+
+readonly DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
+
+get_tty_log_date() {
+  local -r tty_log_date_line="$(sed --quiet -- '2p' "$1")"
+  echo "${tty_log_date_line#Script started on }"
 }
 
-{
-for _tty_log_filename_version in $(
-    _generate_tty_logs_filename_version|sort -nr)
-do
-    _format "$_default_tty_log_filename.$_tty_log_filename_version"
-    [[ ! $_default_tty_log_exists ]] || echo
-done
+format_tty_log_date() {
+  date --date="$(get_tty_log_date "$1")" -- "$DATE_FORMAT"
+}
 
-[[ ! $_default_tty_log_exists ]] || _format "$_default_tty_log_filename"
-}|less -FRX
+get_tty_log_command() {
+  sed --quiet -- '1p' "$1"
+}
+
+str_tty_log() {
+  echo -e '\E[33mlog '"$1"'\E[m\n'`
+         `'Date: '"$(format_tty_log_date "$1")"'\n'`
+         `'\n'`
+         `'    '"$(get_tty_log_command "$1")"
+}
+
+str_tty_metalog() {
+  [[ -e "$TTY_LOGGER_DIRECTORY" ]] || return 0
+
+  local tty_log_paths=()
+
+  while IFS= read -r tty_log_version; do
+    tty_log_paths+=("$(tlogger::get_tty_log_path "$tty_log_version")")
+  done < <(tlogger::get_the_tty_log_versions_descending)
+
+  if [[ -e "$TTY_LOG_PATH" ]]; then
+    tty_log_paths+=("$TTY_LOG_PATH")
+  fi
+
+  readonly tty_log_paths
+  local -r number_of_tty_log_paths="${#tty_log_paths[@]}"
+
+  (( number_of_tty_log_paths > 0 )) || return 0
+
+  for tty_log_path in "${tty_log_paths[@]::number_of_tty_log_paths - 1}"; do
+    str_tty_log "$tty_log_path"
+    echo
+  done
+
+  str_tty_log "${tty_log_paths[-1]}"
+}
+
+main() {
+  str_tty_metalog | less --quit-if-one-screen --RAW-CONTROL-CHARS --no-init
+}
+
+main "$@"
