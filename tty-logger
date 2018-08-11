@@ -17,50 +17,47 @@
 
 set -e -o pipefail
 
+source liblock.sh
 source libsudo.sh
 
 source libtlogger.sh
 
-readonly TTY_LOGGER_LOCK_BASENAME='.lock'
-readonly TTY_LOGGER_LOCK_PATH="$TTY_LOGGER_DIRECTORY"`
-                             `'/'`
-                             `"$TTY_LOGGER_LOCK_BASENAME"
+readonly TTY_LOGGER_LOCK_PATH_EXT='lock'
+readonly TTY_LOGGER_LOCK_PATH_BASENAME=`
+ `"$BASENAME_DELIMITER$TTY_LOGGER_LOCK_PATH_EXT"
+readonly TTY_LOGGER_LOCK_PATH=`
+ `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOGGER_LOCK_PATH_BASENAME"
 readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
                      `'/'`
                      `"$TTY_LOG_BASENAME_VERSION_HEAD"`
-                     `"$TTY_LOG_BASENAME_DELIMITER"`
-                     `"$TTY_LOG_EXT"
+                     `"$BASENAME_DELIMITER"`
+                     `"$TTY_LOG_PATH_EXT"
 
-sudo::the_home_is_the_user_home_or_die
-
-install -d "$TTY_LOGGER_DIRECTORY"
-{
-  if [[ -e $TTY_LOG_PATH ]]; then
-    exec 3> "$TTY_LOG_PATH_VERSION_HEAD"`
-           `"$(($(
-      tlogger::get_the_tty_log_versions \
+get_the_tty_log_version() {
+  echo "$(( $(tlogger::get_the_tty_log_versions \
         | sort --numeric-sort --reverse \
-        | head --lines=1) + 1))"`
-           `"$TTY_LOG_PATH_VERSION_TAIL"
-  else
-    exec 3> "$TTY_LOG_PATH"
-  fi
-} 4> "$TTY_LOGGER_LOCK_PATH"
-_date_format='+%Y-%m-%dT%H:%M:%S%:z'
-
-_format () {
-    while IFS= read -r x
-    do printf "%s %s%s%s\n" "$(date "$_date_format")" "$1" "$x" "$2"
-    done
+        | head --lines=1) + 1))"
 }
 
-date "$_date_format" >&3
-echo "$@" >&3
-{ { { { { {
-    "$@"|tee /dev/stderr 2>&4
-} 2>&1 >&6|tee /dev/stderr 2>&5
-} >&7
-} 6>&1|_format >&3
-} 7>&1|_format '[1;41m' '[0m' >&3
-} 4>&1
-} 5>&2
+main() {
+  sudo::the_home_is_the_user_home_or_die
+  install --directory -- "$TTY_LOGGER_DIRECTORY"
+  lock::make_lock "$TTY_LOGGER_LOCK_PATH"
+
+  if [[ -e $TTY_LOG_PATH ]]; then
+    local -r tty_log_path="$TTY_LOG_PATH_VERSION_HEAD"`
+                         `"$(get_the_tty_log_version)"`
+                         `"$TTY_LOG_PATH_VERSION_TAIL"
+  else
+    local -r tty_log_path="$TTY_LOG_PATH"
+  fi
+
+  exec 3>"$tty_log_path"
+  lock::free_lock "$TTY_LOGGER_LOCK_PATH"
+  local -r args="${*@Q}"
+  echo "$args" >&3
+  exec 3>&-
+  script --append --command "$args" --return --quiet -- "$tty_log_path"
+}
+
+main "$@"
