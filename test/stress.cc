@@ -17,8 +17,8 @@ int main() {
   const auto FormatCStr{Format.c_str()};
 
   /*
-   * `1'000'000` is inspired by the default of the same value of the argument
-   * `number` to Python's `timeit.timeit` function.
+   * `1'000'000` is inspired by the default of the same value of the parameter
+   * `number` to Python's function `timeit.timeit`.
    */
   constexpr LineIndexType NUMBER_OF_LINES{1'000'000};
 
