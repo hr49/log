@@ -22,47 +22,48 @@ source libsudo.sh
 
 source libtlogger.sh
 
-readonly TTY_LOGGER_LOCK_PATH_EXT='lock'
-readonly TTY_LOGGER_LOCK_PATH_BASENAME=`
- `"$BASENAME_DELIMITER$TTY_LOGGER_LOCK_PATH_EXT"
-readonly TTY_LOGGER_LOCK_PATH=`
- `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOGGER_LOCK_PATH_BASENAME"
+readonly LOG_LOCK_PATH_EXT='lock'
+readonly LOG_LOCK_PATH_BASENAME=`
+ `"$BASENAME_DELIMITER$LOG_LOCK_PATH_EXT"
+readonly LOG_LOCK_PATH=`
+ `"$LOG_PATH_DIRNAME"'/'"$LOG_LOCK_PATH_BASENAME"
 
-get_the_latest_tty_log_version() {
-  tlogger::get_the_tty_log_versions_descending | head --lines=1
+get_the_latest_log_version() {
+  tlogger::get_the_log_versions_descending | head --lines=1
 }
 
-get_the_next_tty_log_version() {
-  echo "$(( $(get_the_latest_tty_log_version) + 1 ))"
+get_the_next_log_version() {
+  echo "$(( $(get_the_latest_log_version) + 1 ))"
 }
 
-get_the_next_tty_log_path() {
-  tlogger::get_tty_log_path "$(get_the_next_tty_log_version)"
+get_the_next_log_path() {
+  tlogger::get_log_path "$(get_the_next_log_version)"
 }
 
 main() {
   sudo::the_home_is_the_user_home_or_die
-  install --directory -- "$TTY_LOGGER_DIRECTORY"
-  lock::make_lock "$TTY_LOGGER_LOCK_PATH"
+  install --directory -- "$LOG_PATH_DIRNAME"
+  lock::make_lock "$LOG_LOCK_PATH"
 
-  if [[ -e $TTY_LOG_PATH ]]; then
-    local -r tty_log_path="$(get_the_next_tty_log_path)"
+  if [[ -e $LOG_PATH ]]; then
+    local -r log_path="$(get_the_next_log_path)"
   else
-    local -r tty_log_path="$TTY_LOG_PATH"
+    local -r log_path="$LOG_PATH"
   fi
 
-  exec 3>"$tty_log_path"
-  lock::free_lock "$TTY_LOGGER_LOCK_PATH"
-  local -r args="${*@Q}"
-  echo "$args" >&3
+  exec 3>"$log_path"
+  lock::free_lock "$LOG_LOCK_PATH"
+  local -r command="${*@Q}"
+  echo "$command" >&3
   exec 3>&-
-  SHELL=/bin/bash script \
+    SHELL=/bin/bash \
+  script \
     --append \
-    --command "$args" \
+    --command "$command" \
     --return \
     --quiet \
     -- \
-    "$tty_log_path"
+    "$log_path"
 }
 
 main "$@"
