@@ -21,56 +21,56 @@ source libdie.sh
 
 source libtlogger.sh
 
-readonly DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
+readonly METALOG_DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
 
-get_tty_log_date() {
-  local -r tty_log_date_line="$(sed --quiet -- '2p' "$1")"
-  echo "${tty_log_date_line#Script started on }"
+get_log_date() {
+  local -r log_date_line="$(sed --quiet -- '2p' "$1")"
+  echo "${log_date_line#Script started on }"
 }
 
-format_tty_log_date() {
-  date --date="$(get_tty_log_date "$1")" -- "$DATE_FORMAT"
+format_log_date() {
+  date --date="$(get_log_date "$1")" -- "$METALOG_DATE_FORMAT"
 }
 
-get_tty_log_command() {
+get_log_command() {
   sed --quiet -- '1p' "$1"
 }
 
-str_tty_log() {
+str_log() {
   echo -e '\E[33mlog '"$1"'\E[m\n'`
-         `'Date: '"$(format_tty_log_date "$1")"'\n'`
+         `'Date: '"$(format_log_date "$1")"'\n'`
          `'\n'`
-         `'    '"$(get_tty_log_command "$1")"
+         `'    '"$(get_log_command "$1")"
 }
 
-str_tty_metalog() {
-  [[ -e "$TTY_LOGGER_DIRECTORY" ]] || return 0
+str_metalog() {
+  [[ -e "$LOG_PATH_DIRNAME" ]] || return 0
 
-  local tty_log_paths=()
+  local log_paths=()
 
-  while IFS= read -r tty_log_version; do
-    tty_log_paths+=("$(tlogger::get_tty_log_path "$tty_log_version")")
-  done < <(tlogger::get_the_tty_log_versions_descending)
+  while IFS= read -r log_version; do
+    log_paths+=("$(tlogger::get_log_path "$log_version")")
+  done < <(tlogger::get_the_log_versions_descending)
 
-  if [[ -e "$TTY_LOG_PATH" ]]; then
-    tty_log_paths+=("$TTY_LOG_PATH")
+  if [[ -e "$LOG_PATH" ]]; then
+    log_paths+=("$LOG_PATH")
   fi
 
-  readonly tty_log_paths
-  local -r number_of_tty_log_paths="${#tty_log_paths[@]}"
+  readonly log_paths
+  local -r number_of_log_paths="${#log_paths[@]}"
 
-  (( number_of_tty_log_paths > 0 )) || return 0
+  (( number_of_log_paths > 0 )) || return 0
 
-  for tty_log_path in "${tty_log_paths[@]::number_of_tty_log_paths - 1}"; do
-    str_tty_log "$tty_log_path"
+  for log_path in "${log_paths[@]::number_of_log_paths - 1}"; do
+    str_log "$log_path"
     echo
   done
 
-  str_tty_log "${tty_log_paths[-1]}"
+  str_log "${log_paths[-1]}"
 }
 
 main() {
-  str_tty_metalog | less --quit-if-one-screen --RAW-CONTROL-CHARS --no-init
+  str_metalog | less --quit-if-one-screen --RAW-CONTROL-CHARS --no-init
 }
 
 main "$@"

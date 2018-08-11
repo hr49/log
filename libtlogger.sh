@@ -16,62 +16,59 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 if [[ -z ${LIBTLOGGER_SH+x} ]]; then
-  LIBTLOGGER_SH=
+  readonly LIBTLOGGER_SH=
 
   readonly BASENAME_DELIMITER='.'
   readonly REGEXESCAPED_BASENAME_DELIMITER='\.'
-  readonly TTY_LOGGER_DIRECTORY="$HOME"'/var/log'
-  readonly TTY_LOG_BASENAME_VERSION_HEAD='tty'
-  readonly TTY_LOG_PATH_BASENAME_VERSION_HEAD=`
-   `"$TTY_LOG_BASENAME_VERSION_HEAD$BASENAME_DELIMITER"
-  readonly TTY_LOG_PATH_VERSION_HEAD=`
-   `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOG_PATH_BASENAME_VERSION_HEAD"
-  readonly TTY_LOG_PATH_BASENAME_VERSION_HEAD_REGEX=`
-   `"$TTY_LOG_BASENAME_VERSION_HEAD$REGEXESCAPED_BASENAME_DELIMITER"
-  readonly TTY_LOG_PATH_VERSION_HEAD_REGEX=`
-   `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOG_PATH_BASENAME_VERSION_HEAD_REGEX"
-  readonly TTY_LOG_PATH_EXT='log'
-  readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
-                       `'/'`
-                       `"$TTY_LOG_BASENAME_VERSION_HEAD"`
-                       `"$BASENAME_DELIMITER"`
-                       `"$TTY_LOG_PATH_EXT"
-  readonly TTY_LOG_BASENAME_VERSION_TAIL="$TTY_LOG_PATH_EXT"
-  readonly TTY_LOG_PATH_VERSION_TAIL=`
-   `"$BASENAME_DELIMITER$TTY_LOG_BASENAME_VERSION_TAIL"
-  readonly TTY_LOG_PATH_VERSION_TAIL_REGEX=`
-   `"$REGEXESCAPED_BASENAME_DELIMITER$TTY_LOG_BASENAME_VERSION_TAIL"
-  readonly TTY_LOG_PATH_VERSION_REGEX='[1-9][0-9]*'
-  readonly TTY_LOG_PATH_REGEX="$TTY_LOG_PATH_VERSION_HEAD_REGEX"`
-                             `"$TTY_LOG_PATH_VERSION_REGEX"`
-                             `"$TTY_LOG_PATH_VERSION_TAIL_REGEX"
+  readonly LOG_PATH_DIRNAME="$HOME"'/var/log'
+  readonly LOG_BASENAME_VERSION_HEAD='tty'
+  readonly LOG_PATH_BASENAME_VERSION_HEAD=`
+   `"$LOG_BASENAME_VERSION_HEAD$BASENAME_DELIMITER"
+  readonly LOG_PATH_VERSION_HEAD=`
+   `"$LOG_PATH_DIRNAME"'/'"$LOG_PATH_BASENAME_VERSION_HEAD"
+  readonly LOG_PATH_BASENAME_VERSION_HEAD_REGEX=`
+   `"$LOG_BASENAME_VERSION_HEAD$REGEXESCAPED_BASENAME_DELIMITER"
+  readonly LOG_PATH_VERSION_HEAD_REGEX=`
+   `"$LOG_PATH_DIRNAME"'/'"$LOG_PATH_BASENAME_VERSION_HEAD_REGEX"
+  readonly LOG_PATH_EXT='log'
+  readonly LOG_PATH="$LOG_PATH_DIRNAME"`
+                   `'/'`
+                   `"$LOG_BASENAME_VERSION_HEAD"`
+                   `"$BASENAME_DELIMITER"`
+                   `"$LOG_PATH_EXT"
+  readonly LOG_BASENAME_VERSION_TAIL="$LOG_PATH_EXT"
+  readonly LOG_PATH_VERSION_TAIL=`
+   `"$BASENAME_DELIMITER$LOG_BASENAME_VERSION_TAIL"
+  readonly LOG_PATH_VERSION_TAIL_REGEX=`
+   `"$REGEXESCAPED_BASENAME_DELIMITER$LOG_BASENAME_VERSION_TAIL"
+  readonly LOG_PATH_VERSION_REGEX='[1-9][0-9]*'
+  readonly LOG_PATH_REGEX="$LOG_PATH_VERSION_HEAD_REGEX"`
+                         `"$LOG_PATH_VERSION_REGEX"`
+                         `"$LOG_PATH_VERSION_TAIL_REGEX"
 
-  tlogger::get_tty_log_path() {
-    echo "$TTY_LOG_PATH_VERSION_HEAD$1$TTY_LOG_PATH_VERSION_TAIL"
+  tlogger::get_log_path() {
+    echo "$LOG_PATH_VERSION_HEAD$1$LOG_PATH_VERSION_TAIL"
   }
 
-  tlogger::get_tty_log_version() {
+  tlogger::get_log_version() {
     # If BASH functions could take named arguments, then `$1` would be
-    # `$tty_log_path`, and I would strip the version head and then overwrite
-    # the variable.  However, one cannot overwrite `$1`, so I assign
-    # `$tty_log_path` first here.
-    local -r tty_log_path="${1#$TTY_LOG_PATH_VERSION_HEAD}"
+    # `$log_path`, and I would strip the version head and then overwrite the
+    # variable.  However, one cannot overwrite `$1`, so I assign `$log_path`
+    # first here.
+    local -r log_path="${1#$LOG_PATH_VERSION_HEAD}"
 
-    echo "${tty_log_path%$TTY_LOG_PATH_VERSION_TAIL}"
+    echo "${log_path%$LOG_PATH_VERSION_TAIL}"
   }
 
-  tlogger::get_the_tty_log_versions() {
-    while IFS= read -d $'\0' -r tty_log_path; do
-      tlogger::get_tty_log_version "$tty_log_path"
-    done < <(find \
-        "$TTY_LOGGER_DIRECTORY" \
-        -maxdepth 1 \
-        -regex "$TTY_LOG_PATH_REGEX" \
-        -print0)
+  tlogger::get_the_log_versions() {
+    while IFS= read -d $'\0' -r log_path; do
+      tlogger::get_log_version "$log_path"
+    done < <(
+        find "$LOG_PATH_DIRNAME" -maxdepth 1 -regex "$LOG_PATH_REGEX" -print0)
   }
 
-  tlogger::get_the_tty_log_versions_descending() {
-    tlogger::get_the_tty_log_versions | sort --numeric-sort --reverse
+  tlogger::get_the_log_versions_descending() {
+    tlogger::get_the_log_versions | sort --numeric-sort --reverse
   }
 
 fi
