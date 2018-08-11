@@ -27,16 +27,17 @@ readonly TTY_LOGGER_LOCK_PATH_BASENAME=`
  `"$BASENAME_DELIMITER$TTY_LOGGER_LOCK_PATH_EXT"
 readonly TTY_LOGGER_LOCK_PATH=`
  `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOGGER_LOCK_PATH_BASENAME"
-readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
-                     `'/'`
-                     `"$TTY_LOG_BASENAME_VERSION_HEAD"`
-                     `"$BASENAME_DELIMITER"`
-                     `"$TTY_LOG_PATH_EXT"
 
-get_the_tty_log_version() {
-  echo "$(( $(tlogger::get_the_tty_log_versions \
-        | sort --numeric-sort --reverse \
-        | head --lines=1) + 1))"
+get_the_latest_tty_log_version() {
+  tlogger::get_the_tty_log_versions_descending | head --lines=1
+}
+
+get_the_next_tty_log_version() {
+  echo "$(( $(get_the_latest_tty_log_version) + 1 ))"
+}
+
+get_the_next_tty_log_path() {
+  tlogger::get_tty_log_path "$(get_the_next_tty_log_version)"
 }
 
 main() {
@@ -45,9 +46,7 @@ main() {
   lock::make_lock "$TTY_LOGGER_LOCK_PATH"
 
   if [[ -e $TTY_LOG_PATH ]]; then
-    local -r tty_log_path="$TTY_LOG_PATH_VERSION_HEAD"`
-                         `"$(get_the_tty_log_version)"`
-                         `"$TTY_LOG_PATH_VERSION_TAIL"
+    local -r tty_log_path="$(get_the_next_tty_log_path)"
   else
     local -r tty_log_path="$TTY_LOG_PATH"
   fi
@@ -57,7 +56,13 @@ main() {
   local -r args="${*@Q}"
   echo "$args" >&3
   exec 3>&-
-  script --append --command "$args" --return --quiet -- "$tty_log_path"
+  SHELL=/bin/bash script \
+    --append \
+    --command "$args" \
+    --return \
+    --quiet \
+    -- \
+    "$tty_log_path"
 }
 
 main "$@"

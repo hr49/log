@@ -31,6 +31,11 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
   readonly TTY_LOG_PATH_VERSION_HEAD_REGEX=`
    `"$TTY_LOGGER_DIRECTORY"'/'"$TTY_LOG_PATH_BASENAME_VERSION_HEAD_REGEX"
   readonly TTY_LOG_PATH_EXT='log'
+  readonly TTY_LOG_PATH="$TTY_LOGGER_DIRECTORY"`
+                       `'/'`
+                       `"$TTY_LOG_BASENAME_VERSION_HEAD"`
+                       `"$BASENAME_DELIMITER"`
+                       `"$TTY_LOG_PATH_EXT"
   readonly TTY_LOG_BASENAME_VERSION_TAIL="$TTY_LOG_PATH_EXT"
   readonly TTY_LOG_PATH_VERSION_TAIL=`
    `"$BASENAME_DELIMITER$TTY_LOG_BASENAME_VERSION_TAIL"
@@ -41,20 +46,32 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
                              `"$TTY_LOG_PATH_VERSION_REGEX"`
                              `"$TTY_LOG_PATH_VERSION_TAIL_REGEX"
 
+  tlogger::get_tty_log_path() {
+    echo "$TTY_LOG_PATH_VERSION_HEAD$1$TTY_LOG_PATH_VERSION_TAIL"
+  }
+
   tlogger::get_tty_log_path_version() {
     # If BASH functions could take named arguments, then `$1` would be
     # `$tty_log_path`, and I would strip the version head and then overwrite
     # the variable.  However, one cannot overwrite `$1`, so I assign
     # `$tty_log_path` first here.
-    local -r tty_log_path="${1#"$TTY_LOG_PATH_VERSION_HEAD"}"
+    local -r tty_log_path="${1#$TTY_LOG_PATH_VERSION_HEAD}"
 
-    echo "${tty_log_path%"$TTY_LOG_PATH_VERSION_TAIL"}"
+    echo "${tty_log_path%$TTY_LOG_PATH_VERSION_TAIL}"
   }
 
   tlogger::get_the_tty_log_versions() {
     while IFS= read -d $'\0' -r tty_log_path; do
       tlogger::get_tty_log_path_version "$tty_log_path"
-    done < <(find "$TTY_LOGGER_DIRECTORY" -regex "$TTY_LOG_PATH_REGEX" -print0)
+    done < <(find \
+        "$TTY_LOGGER_DIRECTORY" \
+        -maxdepth 1 \
+        -regex "$TTY_LOG_PATH_REGEX" \
+        -print0)
+  }
+
+  tlogger::get_the_tty_log_versions_descending() {
+    tlogger::get_the_tty_log_versions | sort --numeric-sort --reverse
   }
 
 fi
