@@ -50,7 +50,7 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
     echo "$TTY_LOG_PATH_VERSION_HEAD$1$TTY_LOG_PATH_VERSION_TAIL"
   }
 
-  tlogger::get_tty_log_path_version() {
+  tlogger::get_tty_log_version() {
     # If BASH functions could take named arguments, then `$1` would be
     # `$tty_log_path`, and I would strip the version head and then overwrite
     # the variable.  However, one cannot overwrite `$1`, so I assign
@@ -62,7 +62,7 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
 
   tlogger::get_the_tty_log_versions() {
     while IFS= read -d $'\0' -r tty_log_path; do
-      tlogger::get_tty_log_path_version "$tty_log_path"
+      tlogger::get_tty_log_version "$tty_log_path"
     done < <(find \
         "$TTY_LOGGER_DIRECTORY" \
         -maxdepth 1 \

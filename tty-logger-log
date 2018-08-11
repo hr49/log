@@ -17,6 +17,8 @@
 
 set -e -o pipefail
 
+source libdie.sh
+
 source libtlogger.sh
 
 readonly DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
@@ -41,18 +43,34 @@ str_tty_log() {
          `'    '"$(get_tty_log_command "$1")"
 }
 
-_default_tty_log_exists="$({
-[[ -e $TTY_LOG_PATH ]]
-echo "$?"
-})"
+str_tty_metalog() {
+  [[ -e "$TTY_LOGGER_DIRECTORY" ]] || return 0
 
-{
-for _tty_log_filename_version in $(
-    tlogger::get_the_tty_log_versions_descending)
-do
-  str_tty_log "$(tlogger::get_tty_log_path "$_tty_log_filename_version")"
-  [[ ! $_default_tty_log_exists ]] || echo
-done
+  local tty_log_paths=()
 
-[[ ! $_default_tty_log_exists ]] || str_tty_log "$TTY_LOG_PATH"
-}|less -FRX
+  while IFS= read -r tty_log_version; do
+    tty_log_paths+=("$(tlogger::get_tty_log_path "$tty_log_version")")
+  done < <(tlogger::get_the_tty_log_versions_descending)
+
+  if [[ -e "$TTY_LOG_PATH" ]]; then
+    tty_log_paths+=("$TTY_LOG_PATH")
+  fi
+
+  readonly tty_log_paths
+  local -r number_of_tty_log_paths="${#tty_log_paths[@]}"
+
+  (( number_of_tty_log_paths > 0 )) || return 0
+
+  for tty_log_path in "${tty_log_paths[@]::number_of_tty_log_paths - 1}"; do
+    str_tty_log "$tty_log_path"
+    echo
+  done
+
+  str_tty_log "${tty_log_paths[-1]}"
+}
+
+main() {
+  str_tty_metalog | less --quit-if-one-screen --RAW-CONTROL-CHARS --no-init
+}
+
+main "$@"
