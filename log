@@ -15,45 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-set -e -o pipefail
+set -o pipefail
 
-source liblock.sh
-source libsudo.sh
+source libversion.sh
 
 source libtlogger.sh
 
-readonly LOG_LOCK_PATH_EXT='lock'
-readonly LOG_LOCK_PATH_BASENAME=`
- `"$BASENAME_DELIMITER$LOG_LOCK_PATH_EXT"
-readonly LOG_LOCK_PATH=`
- `"$LOG_PATH_DIRNAME"'/'"$LOG_LOCK_PATH_BASENAME"
-
-get_the_latest_log_version() {
-  tlogger::get_the_log_versions_descending | head --lines=1
-}
-
-get_the_next_log_version() {
-  echo "$(( $(get_the_latest_log_version) + 1 ))"
-}
-
-get_the_next_log_path() {
-  tlogger::get_log_path "$(get_the_next_log_version)"
+make_the_next_log() {
+  version::make_the_next \
+    "$LOG_PATH_DIRNAME" \
+    "$LOG_PATH_VERSION_HEAD" \
+    "$LOG_PATH_BASENAME" \
+    "$LOG_PATH" \
+    "$LOG_PATH_VERSION_TAIL" \
+    "$LOG_PATH_REGEX"
 }
 
 main() {
-  sudo::the_home_is_the_user_home_or_die
-  install --directory -- "$LOG_PATH_DIRNAME"
-  lock::make_lock "$LOG_LOCK_PATH"
+  local log_path
 
-  if [[ -e $LOG_PATH ]]; then
-    local -r log_path="$(get_the_next_log_path)"
-  else
-    local -r log_path="$LOG_PATH"
-  fi
+  log_path="$(make_the_next_log)" || return 1
 
-  exec 3>"$log_path"
-  lock::free_lock "$LOG_LOCK_PATH"
+  readonly log_path
+
   local -r command="${*@Q}"
+
+  exec 3>>"$log_path" || return 1
+
   echo "$command" >&3
   exec 3>&-
     SHELL=/bin/bash \
