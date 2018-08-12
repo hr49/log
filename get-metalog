@@ -59,7 +59,7 @@ get_log_command() {
 
 str_log() {
   local formatted_log_date
-  
+
   formatted_log_date="$(get_formatted_log_date "$1")" || return 1
 
   readonly formatted_log_date
