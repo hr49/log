@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-set -e -o pipefail
+set -o pipefail
 
 source libversion.sh
 
@@ -32,9 +32,16 @@ make_the_next_log() {
 }
 
 main() {
-  local -r log_path="$(make_the_next_log)"
+  local log_path
+
+  log_path="$(make_the_next_log)" || return 1
+
+  readonly log_path
+
   local -r command="${*@Q}"
-  exec 3>>"$log_path"
+
+  exec 3>>"$log_path" || return 1
+
   echo "$command" >&3
   exec 3>&-
     SHELL=/bin/bash \
