@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-set -e -o pipefail
+set -o pipefail
 
 source libdie.sh
 
@@ -36,12 +36,21 @@ get_the_log_versions_descending() {
 }
 
 get_log_date() {
-  local -r log_date_line="$(sed --quiet -- '2p' "$1")"
+  local log_date_line
+
+  log_date_line="$(sed --quiet -- '2p' "$1")" || return 1
+
+  readonly log_date_line
   echo "${log_date_line#Script started on }"
 }
 
-format_log_date() {
-  date --date="$(get_log_date "$1")" -- "$METALOG_DATE_FORMAT"
+get_formatted_log_date() {
+  local log_date
+
+  log_date="$(get_log_date "$1")" || return 1
+
+  readonly log_date
+  date --date="$log_date" -- "$METALOG_DATE_FORMAT"
 }
 
 get_log_command() {
@@ -49,10 +58,20 @@ get_log_command() {
 }
 
 str_log() {
+  local formatted_log_date
+  
+  formatted_log_date="$(get_formatted_log_date "$1")" || return 1
+
+  readonly formatted_log_date
+  local log_command
+
+  log_command="$(get_log_command "$1")" || return 1
+
+  readonly log_command
   echo -e '\E[33mlog '"$1"'\E[m\n'`
-         `'Date: '"$(format_log_date "$1")"'\n'`
+         `'Date: '"$formatted_log_date"'\n'`
          `'\n'`
-         `'    '"$(get_log_command "$1")"
+         `'    '"$log_command"
 }
 
 str_metalog() {
@@ -62,7 +81,9 @@ str_metalog() {
 
   while IFS= read -r log_version; do
     log_paths+=("$(get_log_path "$log_version")")
-  done < <(get_the_log_versions_descending)
+  done < <(get_the_log_versions_descending; echo -n "$?")
+
+  (return "$log_version") || return 1
 
   if [[ -e "$LOG_PATH" ]]; then
     log_paths+=("$LOG_PATH")
