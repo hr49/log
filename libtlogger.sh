@@ -26,14 +26,15 @@ if [[ -z ${LIBTLOGGER_SH+x} ]]; then
         "$LOG_PATH_DIRNAME" \
         "$LOG_BASENAME_VERSION_HEAD")"
   readonly LOG_PATH_EXT='log'
+  readonly LOG_PATH_EXT_REGEX='log'
   readonly LOG_PATH_BASENAME=`
-   `"$(version::path_basename "$LOG_BASENAME_VERSION_HEAD" "$LOG_PATH_EXT")"
+     `"$(version::path_basename "$LOG_BASENAME_VERSION_HEAD" "$LOG_PATH_EXT")"
   readonly LOG_PATH="$(version::path "$LOG_PATH_DIRNAME" "$LOG_PATH_BASENAME")"
   readonly LOG_PATH_VERSION_TAIL=`
-   `"$(version::path_version_tail "$LOG_PATH_EXT")"
+     `"$(version::path_version_tail "$LOG_PATH_EXT")"
   readonly LOG_PATH_REGEX="$(version::path_regex \
         "$LOG_PATH_DIRNAME" \
         "$LOG_BASENAME_VERSION_HEAD" \
-        "$LOG_PATH_EXT")"
+        "$LOG_PATH_EXT_REGEX")"
 
 fi

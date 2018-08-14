@@ -17,6 +17,7 @@
 
 set -o pipefail
 
+source libsudo.sh
 source libversion.sh
 
 source libtlogger.sh
@@ -32,12 +33,13 @@ make_the_next_log() {
 }
 
 main() {
+  sudo::the_home_is_the_user_home_or_die || return 1
+
   local log_path
 
   log_path="$(make_the_next_log)" || return 1
 
   readonly log_path
-
   local -r command="${*@Q}"
 
   exec 3>>"$log_path" || return 1

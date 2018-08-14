@@ -17,8 +17,6 @@
 
 set -o pipefail
 
-source libdie.sh
-
 source libtlogger.sh
 
 readonly METALOG_DATE_FORMAT='+%a %b %d %H:%M:%S %Y %z'
@@ -68,10 +66,11 @@ str_log() {
   log_command="$(get_log_command "$1")" || return 1
 
   readonly log_command
-  echo -e '\E[33mlog '"$1"'\E[m\n'`
-         `'Date: '"$formatted_log_date"'\n'`
-         `'\n'`
-         `'    '"$log_command"
+  echo -e \
+    '\E[33mlog '"$1"'\E[m\n'`
+   `'Date: '"$formatted_log_date"'\n'`
+   `'\n'`
+   `'    '"$log_command"
 }
 
 str_metalog() {
@@ -83,7 +82,7 @@ str_metalog() {
     log_paths+=("$(get_log_path "$log_version")")
   done < <(get_the_log_versions_descending; echo -n "$?")
 
-  (return "$log_version") || return 1
+  (exit "$log_version") || return 1
 
   if [[ -e "$LOG_PATH" ]]; then
     log_paths+=("$LOG_PATH")
